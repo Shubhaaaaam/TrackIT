@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Tracker-IT",
+  "version": "1.0",
+  "description": "Logs visited URLs to a local Python server.",
+  "permissions": [
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:5000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "images/icon.png",
+    "48": "images/icon.png",
+    "128": "images/icon.png"
+  }
+}
