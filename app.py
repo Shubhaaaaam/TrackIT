@@ -50,9 +50,10 @@ def log_url():
                 for site, total_time in site_total_durations.items():
                     log_message += f"{site}: {total_time}\n"
                 log_message += "------------------------------"
+                log_to_file(log_message)
                 flag = 1
             else:
-                log_message = f"Session terminated: {url} at {timestamp_str} (No matching 'visited' or 'started' event found for duration calculation)"
+                log_message = f"Session terminated: {url} at {timestamp_str}"
         elif event == 'started':
             log_message = f"Started: {url} at {timestamp_str}"
             last_visited_timestamps[url] = current_timestamp
@@ -63,7 +64,7 @@ def log_url():
         if flag==0:
             log_to_file(log_message)
         
-        return jsonify({"message": f"URL {event} successfully"}) # Reverted to previous return statement
+        return jsonify({"message": f"URL {event} successfully"})
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
