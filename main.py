@@ -1,70 +1,48 @@
-import psutil
 import time
-import subprocess
-process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
+import psutil
+import win32gui
+import win32process
+from datetime import datetime
 
-def check_and_notify_app_status(app_names):
-    previous_app_status = {app: False for app in app_names}
+SUMMARY_FILE = "applog.txt"
 
-    print("Monitoring applications... Press Ctrl+C to stop.")
-    while True:
-        current_app_status = {app: False for app in app_names}
+def get_active_window_process():
+    try:
+        hwnd = win32gui.GetForegroundWindow()
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+        process = psutil.Process(pid)
+        return process.name().lower()
+    except Exception:
+        return None
 
-        for process in psutil.process_iter(['name']):
-            try:
-                process_name = process.info['name'].lower()
-                for app_name in app_names:
-                    if app_name.lower() in process_name:
-                        current_app_status[app_name] = True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-
-        for app, is_currently_running in current_app_status.items():
-            if is_currently_running and not previous_app_status[app]:
-                print(f"Notification: '{app}' has just opened!")
-
-            elif not is_currently_running and previous_app_status[app]:
-                print(f"Notification: '{app}' has just closed.")
-
-        previous_app_status = current_app_status
-
-        time.sleep(2)
+def save_summary(usage_dict):
+    with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
+        f.write(f"Application Usage Summary ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})\n")
+        f.write("=" * 50 + "\n")
+        for app, seconds in usage_dict.items():
+            mins, secs = divmod(int(seconds), 60)
+            hours, mins = divmod(mins, 60)
+            f.write(f"{app}: {hours}h {mins}m {secs}s\n")
 
 if __name__ == "__main__":
-    applications_to_monitor = [
-        "Code.exe",
-        "WhatsApp.exe",
-        "chrome.exe",
-        "firefox.exe",
-        "msedge.exe",
-        "winword.exe",
-        "excel.exe",
-        "powerpnt.exe",
-        "outlook.exe",
-        "notepad.exe",
-        "notepad++.exe",
-        "vlc.exe",
-        "spotify.exe",
-        "teams.exe",
-        "zoom.exe",
-        "slack.exe",
-        "discord.exe",
-        "telegram.exe",
-        "gimp.exe",
-        "photoshop.exe",
-        "AcroRd32.exe",
-        "calc.exe",
-        "spotify.exe",
-        "pycharm64.exe",
-        "idea64.exe",
-        "sublime_text.exe",
-        "thunderbird.exe",
-        "wmplayer.exe",
-        "brave.exe",
-        "opera.exe",
-    ]
+    usage_times = {}
+    active_app = None
+    start_time = None
 
+    print("Tracking app usage... Press Ctrl+C to stop.")
     try:
-        check_and_notify_app_status(applications_to_monitor)
+        while True:
+            current_app = get_active_window_process()
+            if current_app != active_app:
+                if active_app and start_time:
+                    elapsed = time.time() - start_time
+                    usage_times[active_app] = usage_times.get(active_app, 0) + elapsed
+                active_app = current_app
+                start_time = time.time()
+            time.sleep(1)
     except KeyboardInterrupt:
-        print("\nMonitoring stopped.")
+        if active_app and start_time:
+            elapsed = time.time() - start_time
+            usage_times[active_app] = usage_times.get(active_app, 0) + elapsed
+        save_summary(usage_times)
+        print(f"\nUsage summary saved to '{SUMMARY_FILE}'.")

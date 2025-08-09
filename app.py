@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 app = Flask(__name__)
