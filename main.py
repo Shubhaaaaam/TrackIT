@@ -4,6 +4,9 @@ import win32gui
 import win32process
 from datetime import datetime
 import psycopg2
+import subprocess
+
+process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
 
 DB_NAME = "TraceIT"
 DB_USER = "postgres"
