@@ -14,8 +14,8 @@ const App = () => {
     { id: 6, name: 'Browser', usageCount: 250, totalDuration: 21600000 },
     { id: 7, name: 'Music Player', usageCount: 180, totalDuration: 14400000 },
     { id: 8, name: 'Chat Application', usageCount: 200, totalDuration: 6000000 },
-    { id: 9, name: 'Social Media', usageCount: 300, totalDuration: 18000000 }, // 5 hours
-    { id: 10, name: 'Gaming', usageCount: 60, totalDuration: 12000000 }, // 3.33 hours
+    { id: 9, name: 'Social Media', usageCount: 300, totalDuration: 18000000 },
+    { id: 10, name: 'Gaming', usageCount: 60, totalDuration: 12000000 },
   ], []);
 
   const [appData, setAppData] = useState(initialAppData);
@@ -24,7 +24,33 @@ const App = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [showSimulateMessage, setShowSimulateMessage] = useState(false);
   const [selectedAppForSim, setSelectedAppForSim] = useState(null);
-  const [theme, setTheme] = useState('dark'); // Changed default to 'dark'
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:5000/summary');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const source = data.today ?? data.all_time ?? [];
+        const formatted = source.map((item, idx) => {
+          const seconds = item.seconds ?? 0;
+          const usageCount = item.usageCount ?? Math.max(1, Math.round(seconds / 300));
+          return {
+            id: idx + 1,
+            name: item.app ?? `App ${idx + 1}`,
+            usageCount,
+            totalDuration: seconds * 1000,
+          };
+        });
+        setAppData(formatted);
+      } catch (err) {
+        console.error('Failed to fetch /summary:', err);
+      }
+    };
+
+    fetchSummary();
+  }, []);
 
   const formatDuration = useCallback((ms) => {
     if (ms === 0) return '0m';
@@ -117,10 +143,12 @@ const App = () => {
   }, [appData]);
 
   const mostUsedApp = useMemo(() => {
+    if (!appData || appData.length === 0) return { name: '-', usageCount: 0 };
     return appData.reduce((prev, current) => (prev.usageCount > current.usageCount ? prev : current), appData[0]);
   }, [appData]);
 
   const longestUsedApp = useMemo(() => {
+    if (!appData || appData.length === 0) return { name: '-', totalDuration: 0 };
     return appData.reduce((prev, current) => (prev.totalDuration > current.totalDuration ? prev : current), appData[0]);
   }, [appData]);
 
@@ -154,10 +182,11 @@ const App = () => {
           height: 100%;
           margin: 0;
           padding: 0;
+          overflow-x: hidden;
+          width: 100%;
         }
 
         :root {
-          /* Light Theme Colors (Default) */
           --primary-color-light: #5a7dff;
           --secondary-color-light: #00c6ff;
           --accent-color-light: #ff6b6b;
@@ -171,19 +200,18 @@ const App = () => {
           --gradient-start-light: #5a7dff;
           --gradient-end-light: #00c6ff;
 
-          /* Dark Theme Colors */
-          --primary-color-dark: #8c9eff; /* Slightly lighter blue for contrast on black */
-          --secondary-color-dark: #00e0ff; /* Brighter teal for contrast on black */
-          --accent-color-dark: #ff7f7f; /* Brighter red for contrast on black */
-          --text-color-dark: #f0f0f0; /* Very light gray for text on black */
-          --light-text-color-dark: #b0b0b0; /* Lighter gray for muted text on black */
-          --bg-color-dark: #000000; /* Pure black background */
-          --card-bg-dark: #1a1a1a; /* Dark gray for card background */
-          --border-color-dark: #333333; /* Darker gray border */
-          --shadow-light-dark: rgba(255, 255, 255, 0.05); /* Lighter shadow for dark theme */
-          --shadow-medium-dark: rgba(255, 255, 255, 0.1); /* Lighter shadow for dark theme */
-          --gradient-start-dark: #333333; /* Dark gradient start */
-          --gradient-end-dark: #000000; /* Dark gradient end */
+          --primary-color-dark: #8c9eff;
+          --secondary-color-dark: #00e0ff;
+          --accent-color-dark: #ff7f7f;
+          --text-color-dark: #f0f0f0;
+          --light-text-color-dark: #b0b0b0;
+          --bg-color-dark: #000000;
+          --card-bg-dark: #1a1a1a;
+          --border-color-dark: #333333;
+          --shadow-light-dark: rgba(255, 255, 255, 0.05);
+          --shadow-medium-dark: rgba(255, 255, 255, 0.1);
+          --gradient-start-dark: #333333;
+          --gradient-end-dark: #000000;
         }
 
         body {
@@ -209,7 +237,6 @@ const App = () => {
           transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* Theme-specific styles */
         .light-theme {
           background-color: var(--bg-color-light);
           color: var(--text-color-light);
@@ -220,7 +247,6 @@ const App = () => {
           color: var(--text-color-dark);
         }
 
-        /* General styles using theme variables */
         .header {
           background: linear-gradient(135deg, var(--gradient-start-light), var(--gradient-end-light));
           color: #fff;
@@ -504,7 +530,7 @@ const App = () => {
           background-color: #e3e7eb;
         }
         .dark-theme .app-table th:hover {
-          background-color: #2a2a2a; /* Darker hover for black theme */
+          background-color: #2a2a2a;
         }
 
         .app-table tbody tr {
@@ -524,7 +550,7 @@ const App = () => {
           box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
         .dark-theme .app-table tbody tr:hover {
-          background-color: #222222; /* Darker hover for black theme */
+          background-color: #222222;
           box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
@@ -747,7 +773,6 @@ const App = () => {
           color: var(--primary-color-dark);
         }
 
-        /* Theme Toggle Button */
         .theme-toggle-button {
           background-color: var(--card-bg-light);
           color: var(--text-color-light);

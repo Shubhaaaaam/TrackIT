@@ -86,7 +86,7 @@ if __name__ == "__main__":
                     save_usage(conn, app, seconds)
                 usage_times.clear()
                 last_save_time = time.time()
-
+                print("Updating Data..................")
             time.sleep(1)
 
     except KeyboardInterrupt:
