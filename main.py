@@ -15,6 +15,7 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 
 TABLE_NAME = "app_usage_log"
+SAVE_INTERVAL = 30
 
 def init_db():
     conn = psycopg2.connect(
@@ -48,16 +49,16 @@ def get_active_window_process():
         return None
 
 def save_usage(conn, app_name, seconds):
+    if not app_name:
+        return
     cur = conn.cursor()
     today = datetime.now().date()
-
     cur.execute(f"""
         INSERT INTO {TABLE_NAME} (app_name, usage_seconds, log_date)
         VALUES (%s, %s, %s)
         ON CONFLICT (app_name, log_date)
         DO UPDATE SET usage_seconds = {TABLE_NAME}.usage_seconds + EXCLUDED.usage_seconds;
     """, (app_name, int(seconds), today))
-    
     conn.commit()
     cur.close()
 
@@ -66,23 +67,33 @@ if __name__ == "__main__":
     usage_times = {}
     active_app = None
     start_time = None
+    last_save_time = time.time()
 
-    print("Tracking app usage... Press Ctrl+C to stop.")
+    print("Tracking app usage... Saving every 30 seconds. Press Ctrl+C to stop.")
     try:
         while True:
             current_app = get_active_window_process()
+
             if current_app != active_app:
                 if active_app and start_time:
                     elapsed = time.time() - start_time
                     usage_times[active_app] = usage_times.get(active_app, 0) + elapsed
-                    save_usage(conn, active_app, elapsed)
                 active_app = current_app
                 start_time = time.time()
+
+            if time.time() - last_save_time >= SAVE_INTERVAL:
+                for app, seconds in usage_times.items():
+                    save_usage(conn, app, seconds)
+                usage_times.clear()
+                last_save_time = time.time()
+
             time.sleep(1)
+
     except KeyboardInterrupt:
         if active_app and start_time:
             elapsed = time.time() - start_time
             usage_times[active_app] = usage_times.get(active_app, 0) + elapsed
-            save_usage(conn, active_app, elapsed)
+        for app, seconds in usage_times.items():
+            save_usage(conn, app, seconds)
         conn.close()
         print("\nTracking stopped. Data saved to PostgreSQL.")

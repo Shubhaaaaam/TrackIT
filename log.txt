@@ -1,0 +1,10 @@
+Started: Google.com at 2025-08-12T07:30:31.199Z
+Visited: Google.com at 2025-08-12T07:31:26.790Z
+Visited: Google.com at 2025-08-12T07:37:26.844Z
+Session terminated: Google.com at 2025-08-12T07:37:29.393Z (Duration: 0:00:02.549000)
+--- Current Site Durations ---
+Google.com: 0:00:02.549000
+------------------------------
+Session terminated: Google.com at 2025-08-12T07:37:29.395Z
+Started: Google.com at 2025-08-12T07:37:29.403Z
+Visited: Google.com at 2025-08-12T07:38:16.105Z
