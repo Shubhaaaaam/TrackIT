@@ -1,3 +1,4 @@
+import os
 import time
 import psutil
 import win32gui
@@ -7,6 +8,11 @@ import psycopg2
 import subprocess
 
 process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
+
+subprocess.call("taskkill /F /IM node.exe", shell=True)
+path = r"C:\Users\shubh\OneDrive\Desktop\Projects\Cloned_Repositories\TrackIT\dashboard"
+subprocess.Popen(["cmd.exe", "/k", "npm run dev"], cwd=path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+process.communicate()
 
 DB_NAME = "TraceIT"
 DB_USER = "postgres"
