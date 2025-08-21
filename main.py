@@ -1,18 +1,13 @@
-import os
+from datetime import datetime
 import time
 import psutil
 import win32gui
 import win32process
-from datetime import datetime
 import psycopg2
 import subprocess
 
 process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
-
-subprocess.call("taskkill /F /IM node.exe", shell=True)
-path = r"C:\Users\shubh\OneDrive\Desktop\Projects\Cloned_Repositories\TrackIT\dashboard"
-subprocess.Popen(["cmd.exe", "/k", "npm run dev"], cwd=path, creationflags=subprocess.CREATE_NEW_CONSOLE)
-process.communicate()
+process = subprocess.Popen(['python', 'vite.py'], start_new_session=False)
 
 DB_NAME = "TraceIT"
 DB_USER = "postgres"
@@ -21,7 +16,7 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 
 TABLE_NAME = "app_usage_log"
-SAVE_INTERVAL = 30
+SAVE_INTERVAL = 10
 
 def init_db():
     conn = psycopg2.connect(
