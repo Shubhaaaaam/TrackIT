@@ -16,7 +16,7 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 
 TABLE_NAME = "app_usage_log"
-SAVE_INTERVAL = 10
+SAVE_INTERVAL = 30
 
 def init_db():
     conn = psycopg2.connect(
