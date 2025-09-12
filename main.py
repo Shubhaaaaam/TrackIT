@@ -9,9 +9,9 @@ import subprocess
 process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
 process = subprocess.Popen(['python', 'vite.py'], start_new_session=False)
 
-DB_NAME = "TraceIT"
+DB_NAME = "#"
 DB_USER = "postgres"
-DB_PASSWORD = "1111"
+DB_PASSWORD = "#"
 DB_HOST = "localhost"
 DB_PORT = "5432"
 
