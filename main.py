@@ -9,9 +9,9 @@ import subprocess
 process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
 process = subprocess.Popen(['python', 'vite.py'], start_new_session=False)
 
-DB_NAME = "#"
+DB_NAME = "TraceIT"
 DB_USER = "postgres"
-DB_PASSWORD = "#"
+DB_PASSWORD = "1111"
 DB_HOST = "localhost"
 DB_PORT = "5432"
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 usage_times.clear()
                 last_save_time = time.time()
                 print("Updating Data..................")
-            time.sleep(1)
+            time.sleep(10)
 
     except KeyboardInterrupt:
         if active_app and start_time:
