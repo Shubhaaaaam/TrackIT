@@ -4,10 +4,6 @@ import psutil
 import win32gui
 import win32process
 import psycopg2
-import subprocess
-
-process = subprocess.Popen(['python', 'app.py'], start_new_session=False)
-process = subprocess.Popen(['python', 'vite.py'], start_new_session=False)
 
 DB_NAME = "TraceIT"
 DB_USER = "postgres"
@@ -52,6 +48,7 @@ def get_active_window_process():
 def save_usage(conn, app_name, seconds):
     if not app_name:
         return
+    print(str(app_name)+" is opened")
     cur = conn.cursor()
     today = datetime.now().date()
     cur.execute(f"""
@@ -88,7 +85,7 @@ if __name__ == "__main__":
                 usage_times.clear()
                 last_save_time = time.time()
                 print("Updating Data..................")
-            time.sleep(1)
+            time.sleep(30)
 
     except KeyboardInterrupt:
         if active_app and start_time:
