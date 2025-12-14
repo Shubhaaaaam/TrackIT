@@ -7,19 +7,22 @@ from pathlib import Path
 def add_to_startup(script_path=None):
     if script_path is None:
         script_path = os.path.abspath(sys.argv[0])
-    startup_folder = winshell.startup()
-    shortcut_path = os.path.join(startup_folder, "MyPythonScript.lnk")
-    python_path = sys.executable
 
-    shell = Dispatch('WScript.Shell')
+    startup_folder = winshell.startup()
+    shortcut_path = os.path.join(startup_folder, "TrackIT.lnk")
+
+    python_path = sys.executable.replace("python.exe", "pythonw.exe")
+
+    shell = Dispatch("WScript.Shell")
     shortcut = shell.CreateShortCut(shortcut_path)
-    shortcut.Targetpath = python_path
+    shortcut.TargetPath = python_path
     shortcut.Arguments = f'"{script_path}"'
     shortcut.WorkingDirectory = os.path.dirname(script_path)
     shortcut.IconLocation = python_path
-    shortcut.save()
-    print(f"Shortcut created at: {shortcut_path}")
+    shortcut.Save()
 
+    print("Startup script added successfully.")
+    print(f"Shortcut created at: {shortcut_path}")
 
 def get_desktop_path():
     """Return the correct Desktop path, even if under OneDrive."""
@@ -43,6 +46,6 @@ def create_shortcut(url="http://localhost:5173/", shortcut_name="TrackIT"):
 
 
 if __name__ == "__main__":
-    target_script = r"C:\Users\shubh\OneDrive\Desktop\Projects\Cloned Repositories\TrackIT\main.py"
+    target_script = r"F:\Projects\TrackIT\TrackIT.py"
     add_to_startup(target_script)
     create_shortcut()

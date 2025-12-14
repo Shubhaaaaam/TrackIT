@@ -25,32 +25,35 @@ const App = () => {
   const [showSimulateMessage, setShowSimulateMessage] = useState(false);
   const [selectedAppForSim, setSelectedAppForSim] = useState(null);
   const [theme, setTheme] = useState('dark');
+  const [viewMode, setViewMode] = useState('all_time');
+
 
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const res = await fetch('http://127.0.0.1:5000/summary');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const source = data.today ?? data.all_time ?? [];
-        const formatted = source.map((item, idx) => {
-          const seconds = item.seconds ?? 0;
-          const usageCount = item.usageCount ?? Math.max(1, Math.round(seconds / 300));
-          return {
-            id: idx + 1,
-            name: item.app ?? `App ${idx + 1}`,
-            usageCount,
-            totalDuration: seconds * 1000,
-          };
-        });
-        setAppData(formatted);
-      } catch (err) {
-        console.error('Failed to fetch /summary:', err);
-      }
-    };
+  const fetchSummary = async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/summary');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    fetchSummary();
-  }, []);
+      const data = await res.json();
+
+      const source = data[viewMode] || [];
+
+      const formatted = source.map((item, idx) => ({
+        id: idx + 1,
+        name: item.app,
+        usageCount: item.opens ?? 0,   
+        totalDuration: (item.seconds ?? 0) * 1000, 
+      }));
+
+      setAppData(formatted);
+    } catch (err) {
+      console.error('Failed to fetch /summary:', err);
+    }
+  };
+
+  fetchSummary();
+}, []);
+
 
   const formatDuration = useCallback((ms) => {
     if (ms === 0) return '0m';
@@ -959,6 +962,13 @@ const App = () => {
         <div>
           <h1>User Dashboard</h1>
           <p>Welcome, John Doe! Here's an overview of your app usage.</p>
+        </div>
+        <div>
+          <button onClick={() =>
+            setViewMode(viewMode === 'today' ? 'all_time' : 'today')
+          }>
+            <h3>{viewMode === 'today' ? 'Today' : 'All Time'}</h3>
+          </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button className="theme-toggle-button" onClick={toggleTheme}>
