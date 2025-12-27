@@ -101,7 +101,7 @@ It is designed for **productivity analysis, usage analytics, research, and syste
 
 ## 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/your-username/TrackIT.git
+git clone https://github.com/Shubhaaaaam/TrackIT.git
 cd TrackIT
 ```
 ## ▶️ Installation & Usage
