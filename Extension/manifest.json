@@ -1,20 +1,30 @@
 {
   "manifest_version": 3,
   "name": "Tracker-IT",
-  "version": "1.0",
-  "description": "Logs visited URLs to a local Python server.",
-  "permissions": [
-    "activeTab",
-    "tabs"
-  ],
-  "host_permissions": [
-    "http://localhost:5000/*"
-  ],
+  "description": "Tracks active browser sessions and website usage locally for productivity analysis.",
+  "version": "1.0.0",
+
+  "action": {
+    "default_title": "Tracker-IT is running",
+    "default_popup": "popup.html"
+  },
+
   "background": {
     "service_worker": "background.js"
   },
+
+  "permissions": [
+    "tabs",
+    "windows"
+  ],
+
+  "host_permissions": [
+    "http://localhost:6001/*"
+  ],
+
   "icons": {
     "16": "images/icon.png",
+    "32": "images/icon.png",
     "48": "images/icon.png",
     "128": "images/icon.png"
   }

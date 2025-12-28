@@ -1,243 +1,123 @@
-const tabToUrl = {};
-let lastActiveTabId = null;
-const siteDisplayNames = {
-  'mail.google.com': 'Gmail',
-  'google.com': 'Google',
-  'bing.com': 'Bing',
-  'duckduckgo.com': 'DuckDuckGo',
-  'yahoo.com': 'Yahoo',
-  'baidu.com': 'Baidu',
-  'ask.com': 'Ask',
-  'facebook.com': 'Facebook',
-  'instagram.com': 'Instagram',
-  'tiktok.com': 'TikTok',
-  'twitter.com': 'X',
-  'x.com': 'X',
-  'snapchat.com': 'Snapchat',
-  'pinterest.com': 'Pinterest',
-  'reddit.com': 'Reddit',
-  'discord.com': 'Discord',
-  'quora.com': 'Quora',
-  'threads.net': 'Threads',
-  'telegram.org': 'Telegram',
-  'whatsapp.com': 'WhatsApp',
-  'wechat.com': 'WeChat',
-  'youtube.com': 'YouTube',
-  'netflix.com': 'Netflix',
-  'primevideo.com': 'Prime Video',
-  'hotstar.com': 'Disney+ Hotstar',
-  'twitch.tv': 'Titch',
-  'spotify.com': 'Spotify',
-  'soundcloud.com': 'SoundCloud',
-  'hulu.com': 'Hulu',
-  'disneyplus.com': 'Disney+',
-  'crunchyroll.com': 'Crunchyroll',
-  'amazon.com': 'Amazon',
-  'amazon.in': 'Amazon India',
-  'amazon.': 'Amazon',
-  'flipkart.com': 'Flipkart',
-  'ebay.com': 'eBay',
-  'aliexpress.com': 'AliExpress',
-  'shein.com': 'Shein',
-  'myntra.com': 'Myntra',
-  'etsy.com': 'Etsy',
-  'walmart.com': 'Walmart',
-  'nike.com': 'Nike',
-  'adidas.com': 'Adidas',
-  'ajio.com': 'AJIO',
-  'snapdeal.com': 'Snapdeal',
-  'meesho.com': 'Meesho',
-  'microsoft.com': 'Microsoft',
-  'apple.com': 'Apple',
-  'tesla.com': 'Tesla',
-  'adobe.com': 'Adobe',
-  'nvidia.com': 'NVIDIA',
-  'intel.com': 'Intel',
-  'amd.com': 'AMD',
-  'openai.com': 'OpenAI',
-  'deepmind.com': 'DeepMind',
-  'anthropic.com': 'Anthropic',
-  'wikipedia.org': 'Wikipedia',
-  'stackoverflow.com': 'StackOverflow',
-  'geeksforgeeks.org': 'GeeksForGeeks',
-  'w3schools.com': 'W3Schools',
-  'coursera.org': 'Coursera',
-  'udemy.com': 'Udemy',
-  'khanacademy.org': 'Khan Academy',
-  'edx.org': 'edX',
-  'brilliant.org': 'Brilliant',
-  'linkedin.com': 'LinkedIn',
-  'zoom.us': 'Zoom',
-  'slack.com': 'Slack',
-  'notion.so': 'Notion',
-  'canva.com': 'Canva',
-  'github.com': 'GitHub',
-  'gitlab.com': 'GitLab',
-  'bitbucket.org': 'Bitbucket',
-  'trello.com': 'Trello',
-  'asana.com': 'Asana',
-  'monday.com': 'Monday.com',
-  'bbc.com': 'BBC',
-  'cnn.com': 'CNN',
-  'nytimes.com': 'New York Times',
-  'indiatimes.com': 'India Times',
-  'theguardian.com': 'The Guardian',
-  'forbes.com': 'Forbes',
-  'news18.com': 'News18',
-  'ndtv.com': 'NDTV',
-  'hindustantimes.com': 'Hindustan Times',
-  'moneycontrol.com': 'Moneycontrol',
-  'economictimes.com': 'Economic Times',
-  'paypal.com': 'PayPal',
-  'upi': 'UPI Payment',
-  'stripe.com': 'Stripe',
-  'razorpay.com': 'Razorpay',
-  'phonepe.com': 'PhonePe',
-  'paytm.com': 'Paytm',
-  'sbi.co.in': 'SBI',
-  'hdfcbank.com': 'HDFC Bank',
-  'booking.com': 'Booking',
-  'airbnb.com': 'Airbnb',
-  'makemytrip.com': 'MakeMyTrip',
-  'agoda.com': 'Agoda',
-  'goibibo.com': 'Goibibo',
-  'googlemaps.com': 'Google Maps',
-  'uber.com': 'Uber',
-  'ola.cabs': 'Ola',
-  'medium.com': 'Medium',
-  'imgur.com': 'Imgur',
-  'indeed.com': 'Indeed',
-  'glassdoor.com': 'Glassdoor',
-  'zomato.com': 'Zomato',
-  'swiggy.com': 'Swiggy',
-  'dominos.co.in': 'Dominos',
-  'mcdonalds.com': 'McDonalds',
-  'chatgpt.com': 'ChatGPT',
-  'claude.ai': 'Claude AI',
-  'character.ai': 'Character AI'
-};
+console.log("🔥 Tracker-IT advanced service worker started");
 
-function getDisplayUrl(url) {
-  let displayUrl = url;
-  try {
-    const urlObj = new URL(url);
-    const hostname = urlObj.hostname;
+let activeTabId = null;
+let activeUrl = null;
+let activeStartTime = null;
+let windowFocused = true;
 
-    if (url === 'https://www.google.com/' || url === 'http://www.google.com/') {
-      displayUrl = 'Google.com';
-      return displayUrl;
-    }
+const HEARTBEAT_INTERVAL = 30000;
 
-    for (const key in siteDisplayNames) {
-      if (hostname.includes(key)) {
-        displayUrl = siteDisplayNames[key];
-        return displayUrl;
-      }
-    }
-
-    displayUrl = urlObj.origin + '/';
-
-  } catch (e) {
-    console.error("Invalid URL:", url, e);
-    displayUrl = url;
-  }
-  return displayUrl;
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
 }
 
-
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-  if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith("http")) {
-    const processedUrl = getDisplayUrl(tab.url);
-    if (tabToUrl[tabId] !== processedUrl) {
-      tabToUrl[tabId] = processedUrl;
-      fetch('http://localhost:6001/log_url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          event: 'visited',
-          url: processedUrl,
-          timestamp: new Date().toISOString()
-        })
-      })
-        .then(response => response.json())
-        .then(data => console.log('URL visited logged:', data))
-        .catch(error => console.error('Error logging URL visit:', error));
-    }
+function normalizeUrl(url) {
+  try {
+    return new URL(url).hostname.replace("www.", "");
+  } catch {
+    return url;
   }
-});
+}
 
-chrome.tabs.onActivated.addListener(function (activeInfo) {
-  const currentActiveTabId = activeInfo.tabId;
+function send(event, url) {
+  const payload = {
+    event,
+    url,
+    date: todayISO(),
+    timestamp: new Date().toISOString()
+  };
 
-  if (lastActiveTabId !== null && lastActiveTabId !== currentActiveTabId) {
-    const terminatedUrl = tabToUrl[lastActiveTabId];
-    if (terminatedUrl) {
-      fetch('http://localhost:5000/log_url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          event: 'session terminated',
-          url: terminatedUrl,
-          timestamp: new Date().toISOString()
-        })
-      })
-        .then(response => response.json())
-        .then(data => console.log('Session terminated logged:', data))
-        .catch(error => console.error('Error logging session termination:', error));
-    }
+  return fetch("http://localhost:6001/log_url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+function startSession(tabId, url) {
+  activeTabId = tabId;
+  activeUrl = url;
+  activeStartTime = Date.now();
+  send("started", url);
+}
+
+function endSession(reason = "session terminated") {
+  if (!activeUrl) return;
+  send(reason, activeUrl);
+  activeTabId = null;
+  activeUrl = null;
+  activeStartTime = null;
+}
+
+function pauseSession() {
+  if (!activeUrl) return;
+  send("paused", activeUrl);
+}
+
+function resumeSession() {
+  if (!activeUrl) return;
+  send("resumed", activeUrl);
+}
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  if (activeTabId !== null && activeTabId !== tabId) {
+    endSession("session terminated");
   }
 
-  chrome.tabs.get(currentActiveTabId, function (tab) {
-    if (tab && tab.url && tab.url.startsWith("http")) {
-      const processedUrl = getDisplayUrl(tab.url);
-
-      tabToUrl[currentActiveTabId] = processedUrl;
-      fetch('http://localhost:5000/log_url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          event: 'started',
-          url: processedUrl,
-          timestamp: new Date().toISOString()
-        })
-      })
-        .then(response => response.json())
-        .then(data => console.log('Session started logged:', data))
-        .catch(error => console.error('Error logging session start:', error));
+  chrome.tabs.get(tabId, tab => {
+    if (tab?.url?.startsWith("http")) {
+      startSession(tabId, normalizeUrl(tab.url));
     }
   });
-
-  lastActiveTabId = currentActiveTabId;
 });
 
-chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
-  const url = tabToUrl[tabId];
-  if (url) {
-    fetch('http://localhost:5000/log_url', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        event: 'session terminated',
-        url: url,
-        timestamp: new Date().toISOString()
-      })
-    })
-      .then(response => response.json())
-      .then(data => console.log('URL closed logged:', data))
-      .catch(error => console.error('Error logging URL close:', error))
-      .finally(() => {
-        delete tabToUrl[tabId];
-        if (lastActiveTabId === tabId) {
-          lastActiveTabId = null;
-        }
-      });
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (
+    tabId === activeTabId &&
+    changeInfo.status === "complete" &&
+    tab.url?.startsWith("http")
+  ) {
+    endSession("session terminated");
+    startSession(tabId, normalizeUrl(tab.url));
+  }
+});
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  if (tabId === activeTabId) {
+    endSession("session terminated");
+  }
+});
+
+chrome.windows.onFocusChanged.addListener(windowId => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    windowFocused = false;
+    pauseSession();
+  } else {
+    if (!windowFocused) {
+      windowFocused = true;
+      resumeSession();
+    }
+  }
+});
+
+setInterval(() => {
+  if (activeUrl && windowFocused) {
+    send("heartbeat", activeUrl);
+  }
+}, HEARTBEAT_INTERVAL);
+
+chrome.runtime.onStartup.addListener(() => {
+  endSession("session terminated");
+});
+
+chrome.runtime.onSuspend.addListener(() => {
+  endSession("session terminated");
+});
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "GET_TRACK_STATUS") {
+    sendResponse({
+      active: !!activeUrl && windowFocused
+    });
   }
 });

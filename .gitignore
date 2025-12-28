@@ -1,4 +1,5 @@
-log.txt
-app_usage_log.csv
+web_log.txt
+app_log.csv
 kill.py
 CapturedPhotos/
+reports/

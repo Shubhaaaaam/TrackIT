@@ -6,7 +6,7 @@ import win32process
 import csv
 import os
 
-CSV_FILE = "app_usage_log.csv"
+CSV_FILE = "app_log.csv"
 SAVE_INTERVAL = 0.5
 
 #print("Windows app tracker started.")

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Tracker-IT</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 12px;
+      width: 220px;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .inactive {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    h1 {
+      font-size: 14px;
+      margin: 0 0 6px 0;
+    }
+
+    p {
+      font-size: 12px;
+      margin: 0;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tracker-IT</h1>
+  <div class="status">
+    <div id="dot" class="dot"></div>
+    <p id="text">Session is being tracked</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

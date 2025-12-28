@@ -4,8 +4,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import csv
 import os
+import threading
 
-CSV_FILE = "app_usage_log.csv"
+CSV_FILE = "app_log.csv"
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +14,7 @@ CORS(app)
 def load_csv():
     if not os.path.exists(CSV_FILE):
         return []
-    
+
     data = []
     with open(CSV_FILE, "r") as f:
         reader = csv.DictReader(f)
@@ -37,21 +38,21 @@ def summary():
     today_str = str(datetime.now().date())
 
     for row in rows:
-        app = row["app_name"]
+        app_name = row["app_name"]
         seconds = row["usage_seconds"]
         opens = row["open_count"]
         date = row["log_date"]
 
-        if app not in all_time_map:
-            all_time_map[app] = {"seconds": 0, "open_count": 0}
-        all_time_map[app]["seconds"] += seconds
-        all_time_map[app]["open_count"] += opens
+        if app_name not in all_time_map:
+            all_time_map[app_name] = {"seconds": 0, "open_count": 0}
+        all_time_map[app_name]["seconds"] += seconds
+        all_time_map[app_name]["open_count"] += opens
 
         if date == today_str:
-            if app not in today_map:
-                today_map[app] = {"seconds": 0, "open_count": 0}
-            today_map[app]["seconds"] += seconds
-            today_map[app]["open_count"] += opens
+            if app_name not in today_map:
+                today_map[app_name] = {"seconds": 0, "open_count": 0}
+            today_map[app_name]["seconds"] += seconds
+            today_map[app_name]["open_count"] += opens
 
     all_time = [
         {"app": app, "seconds": v["seconds"], "open_count": v["open_count"]}
@@ -70,68 +71,77 @@ def summary():
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
-last_visited_timestamps = {}
-site_total_durations = {}
-LOG_FILE = "log.txt"
+active_sessions = {}
+daily_totals = {}
+
+lock = threading.Lock()
+
+LOG_FILE = "web_log.txt"
+REPORT_DIR = "reports"
+
+os.makedirs(REPORT_DIR, exist_ok=True)
 
 def log_to_file(message):
-    with open(LOG_FILE, "a") as f:
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(message + "\n")
+
+def export_day_to_csv(day, site_data):
+    filename = f"usage_{day}.csv"
+    path = os.path.join(REPORT_DIR, filename)
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["date", "site", "total_seconds", "minutes", "hours"])
+
+        for site, duration in site_data.items():
+            total_seconds = int(duration.total_seconds())
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            writer.writerow([day.isoformat(), site, total_seconds, hours, minutes])
 
 @app.route("/log_url", methods=["POST"])
 def log_url():
-    data = request.get_json()
+    data = request.get_json(force=True)
+
     event = data.get("event")
     url = data.get("url")
-    timestamp_str = data.get("timestamp")
+    timestamp = datetime.fromisoformat(data["timestamp"].replace("Z", "+00:00"))
+    event_date = datetime.fromisoformat(data["date"]).date()
 
-    current_timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-    log_message = ""
-    flag = 0
+    with lock:
+        for site, session in list(active_sessions.items()):
+            if session["date"] != event_date:
+                duration = timestamp - session["start"]
+                daily_totals.setdefault(session["date"], {})
+                daily_totals[session["date"]].setdefault(site, timedelta())
+                daily_totals[session["date"]][site] += duration
+                export_day_to_csv(session["date"], daily_totals[session["date"]])
+                active_sessions.pop(site)
 
-    if event == "visited":
-        log_message = f"Visited: {url} at {timestamp_str}"
-        last_visited_timestamps[url] = current_timestamp
+        if event == "started":
+            active_sessions[url] = {
+                "start": timestamp,
+                "date": event_date
+            }
 
-    elif event == "closed":
-        log_message = f"Closed: {url} at {timestamp_str}"
-        if url in last_visited_timestamps:
-            del last_visited_timestamps[url]
+        elif event in ("session terminated", "paused"):
+            session = active_sessions.pop(url, None)
+            if session:
+                duration = timestamp - session["start"]
+                daily_totals.setdefault(session["date"], {})
+                daily_totals[session["date"]].setdefault(url, timedelta())
+                daily_totals[session["date"]][url] += duration
+                export_day_to_csv(session["date"], daily_totals[session["date"]])
 
-    elif event == "session terminated":
-        if url in last_visited_timestamps:
-            visited_time = last_visited_timestamps.pop(url)
-            duration = current_timestamp - visited_time
+        elif event == "heartbeat":
+            pass
 
-            log_message = (
-                f"Session terminated: {url} at {timestamp_str} (Duration: {duration})"
-            )
-
-            prev = site_total_durations.get(url, timedelta())
-            site_total_durations[url] = prev + duration
-
-            log_message += "\n--- Current Site Durations ---\n"
-            for site, total_time in site_total_durations.items():
-                log_message += f"{site}: {total_time}\n"
-            log_message += "------------------------------"
-
-            log_to_file(log_message)
-            flag = 1
         else:
-            log_message = f"Session terminated: {url} at {timestamp_str}"
+            log_to_file(f"UNKNOWN EVENT | {data}")
 
-    elif event == "started":
-        log_message = f"Started: {url} at {timestamp_str}"
-        last_visited_timestamps[url] = current_timestamp
+        log_to_file(f"{event.upper()} | {url} | {timestamp.isoformat()}")
 
-    else:
-        log_message = f"Unknown event: {event}, URL: {url} at {timestamp_str}"
-
-    print(log_message)
-    if flag == 0:
-        log_to_file(log_message)
-
-    return jsonify({"message": f"URL {event} logged successfully"})
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(port=6001, debug=True)
+    app.run(port=6001, debug=False)
