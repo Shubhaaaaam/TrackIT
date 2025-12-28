@@ -30,6 +30,8 @@ APP_NAME_MAP = {
     "cmd.exe": "Command Prompt",
     "powershell.exe": "PowerShell",
     "wt.exe": "Windows Terminal",
+    "Taskmgr.exe": "Task Manager",
+    "OpenWith.exe": "Open With",
 
     "whatsapp.exe": "WhatsApp Desktop",
     "whatsapp.root.exe": "WhatsApp Desktop",
@@ -38,7 +40,8 @@ APP_NAME_MAP = {
     "slack.exe": "Slack",
     "teams.exe": "Microsoft Teams",
     "skype.exe": "Skype",
-
+    "SearchApp.exe": "Windows Search",
+    
     "notepad.exe": "Notepad",
     "notepad++.exe": "Notepad++",
     "sublime_text.exe": "Sublime Text",

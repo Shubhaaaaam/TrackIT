@@ -150,7 +150,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     const processedUrl = getDisplayUrl(tab.url);
     if (tabToUrl[tabId] !== processedUrl) {
       tabToUrl[tabId] = processedUrl;
-      fetch('http://localhost:5000/log_url', {
+      fetch('http://localhost:6001/log_url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -127,7 +127,7 @@ def log_url():
     else:
         log_message = f"Unknown event: {event}, URL: {url} at {timestamp_str}"
 
-    #print(log_message)
+    print(log_message)
     if flag == 0:
         log_to_file(log_message)
 

@@ -7,9 +7,9 @@ def install(pkgs):
         if p not in BUILT_IN and not importlib.util.find_spec(p):
             subprocess.check_call([sys.executable, "-m", "pip", "install", p])
 processes = [
+    ("cam.py", ["opencv-python"]),
     ("vite.py", []),
     ("main.py", ["psutil", "win32gui", "win32process"]),
-    ("cam.py", ["opencv-python"]),
     ("app.py", ["flask", "flask_cors"]),
 ]
 for script, pkgs in processes:
