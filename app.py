@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import csv
 import os
@@ -26,6 +26,28 @@ def load_csv():
                 "log_date": row["log_date"]
             })
     return data
+
+PHOTO_DIR = r"F:\Projects\TrackIT\CapturedPhotos"
+
+@app.route("/photos/<path:filename>")
+def serve_photo(filename):
+    return send_from_directory(PHOTO_DIR, filename)
+
+@app.route("/users", methods=["GET"])
+def get_users():
+    users = []
+
+    if not os.path.exists(PHOTO_DIR):
+        return jsonify([])
+
+    for file in os.listdir(PHOTO_DIR):
+        if file.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+            users.append({
+                "name": os.path.splitext(file)[0],
+                "photo": f"http://localhost:6001/photos/{file}"
+            })
+
+    return jsonify(users)
 
 @app.route("/summary", methods=["GET"])
 def summary():

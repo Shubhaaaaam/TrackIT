@@ -182,9 +182,6 @@ const App = () => {
     <div className={`dashboard-container ${theme}-theme`}>
       <header className="header">
         <div>
-          <a href='new.html'>USERS</a>
-        </div>
-        <div>
           <h1>User Dashboard</h1>
           <p>Welcome, John Doe! Here's an overview of your app usage.</p>
         </div>
@@ -196,6 +193,9 @@ const App = () => {
             setViewMode(viewMode === 'today' ? 'all_time' : 'today')
           }>
             <span>{viewMode === 'today' ? 'All' : 'Today'}</span>
+          </button>
+          <button onClick={() => window.open('/user.html', '_blank')}>
+            See Users
           </button>
           <button className="theme-toggle-button" onClick={toggleTheme}>
             <span className="icon">

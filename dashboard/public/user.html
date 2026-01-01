@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Captured Photos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card .meta {
+      padding: 10px;
+      font-size: 13px;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📸 Captured Photos</h1>
+
+<div id="grid" class="grid"></div>
+
+<div id="modal" class="modal" onclick="closeModal()">
+  <img id="modalImg" />
+</div>
+
+<script>
+  const API = "http://localhost:6001/users";
+  const grid = document.getElementById("grid");
+
+  function formatName(name) {
+    const [date, time] = name.split("_");
+    return `${date} · ${time.replaceAll("-", ":")}`;
+  }
+
+  function openModal(src) {
+    document.getElementById("modalImg").src = src;
+    document.getElementById("modal").classList.add("show");
+  }
+
+  function closeModal() {
+    document.getElementById("modal").classList.remove("show");
+  }
+
+  async function loadPhotos() {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    data.sort((a, b) => b.name.localeCompare(a.name));
+
+    data.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const img = document.createElement("img");
+      img.src = item.photo;
+      img.loading = "lazy";
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerText = formatName(item.name);
+
+      card.onclick = () => openModal(item.photo);
+
+      card.appendChild(img);
+      card.appendChild(meta);
+      grid.appendChild(card);
+    });
+  }
+
+  loadPhotos();
+</script>
+
+</body>
+</html>
