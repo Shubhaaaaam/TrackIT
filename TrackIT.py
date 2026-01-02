@@ -1,4 +1,4 @@
-import subprocess, sys, importlib.util
+import subprocess, sys, importlib.util, os
 pythonw = sys.executable.replace("python.exe", "pythonw.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
 BUILT_IN = {"datetime", "time", "os", "csv", "random", "logging", "subprocess"}
@@ -16,3 +16,10 @@ for script, pkgs in processes:
     install(pkgs)
     subprocess.Popen([pythonw, script], creationflags=NO_WINDOW)
 print("All processes started successfully.")
+
+if not os.path.exists("api.txt"):
+    print("Please get your Gemini API key")
+    api_key = input("Enter your API key: ")
+    with open("api.txt", "w") as f:
+        f.write(api_key)
+    print("API key saved to api.txt")
