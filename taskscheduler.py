@@ -46,6 +46,6 @@ def create_shortcut(url="http://localhost:5173/", shortcut_name="TrackIT"):
 
 
 if __name__ == "__main__":
-    target_script = r"C:\Users\shubh\OneDrive\Projects Documents\GitHub\TrackIT\TrackIT.py"
+    target_script = r"F:\Projects\TrackIT\TrackIT.py"
     add_to_startup(target_script)
     create_shortcut()

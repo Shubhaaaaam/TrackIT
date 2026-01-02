@@ -111,15 +111,19 @@ def export_day_to_csv(day, site_data):
     filename = f"usage_{day}.csv"
     path = os.path.join(REPORT_DIR, filename)
 
-    with open(path, "w", newline="", encoding="utf-8") as f:
+    file_exists = os.path.exists(path)
+
+    with open(path, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["date", "site", "total_seconds", "minutes", "hours"])
+
+        if not file_exists:
+            writer.writerow(["date", "site", "total_seconds", "minutes", "hours"])
 
         for site, duration in site_data.items():
             total_seconds = int(duration.total_seconds())
             hours = total_seconds // 3600
             minutes = (total_seconds % 3600) // 60
-            writer.writerow([day.isoformat(), site, total_seconds, hours, minutes])
+            writer.writerow([day.isoformat(), site, total_seconds, minutes, hours])
 
 @app.route("/log_url", methods=["POST"])
 def log_url():
@@ -157,9 +161,6 @@ def log_url():
 
         elif event == "heartbeat":
             pass
-
-        else:
-            log_to_file(f"UNKNOWN EVENT | {data}")
 
         log_to_file(f"{event.upper()} | {url} | {timestamp.isoformat()}")
 
