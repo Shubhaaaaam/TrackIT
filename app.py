@@ -8,7 +8,10 @@ import threading
 import google.generativeai as genai
 import pandas as pd
 
-genai.configure(api_key="YOUR_API_KEY")
+with open("api.txt", "r") as f:
+    api= f.read().strip()
+
+genai.configure(api_key=api)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
 PHOTO_DIR = r"F:\Projects\TrackIT\CapturedPhotos"
