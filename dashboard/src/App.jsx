@@ -20,8 +20,8 @@ const App = () => {
 
   const [appData, setAppData] = useState(initialAppData);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortBy, setSortBy] = useState('totalDuration');
+  const [sortOrder, setSortOrder] = useState('des');
   const [showSimulateMessage, setShowSimulateMessage] = useState(false);
   const [selectedAppForSim, setSelectedAppForSim] = useState(null);
   const [theme, setTheme] = useState('dark');
@@ -194,8 +194,11 @@ const App = () => {
           }>
             <span>{viewMode === 'today' ? 'All' : 'Today'}</span>
           </button>
-          <button onClick={() => window.open('/user.html', '_blank')}>
+          <button onClick={() => window.open('/user.html')}>
             See Users
+          </button>
+          <button onClick={() => window.open('/report.html')}>
+            Web Productivity Report
           </button>
           <button className="theme-toggle-button" onClick={toggleTheme}>
             <span className="icon">
@@ -290,7 +293,6 @@ const App = () => {
                 outerRadius={150}
                 fill="#8884d8"
                 labelLine={false}
-              //label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
               >
                 {
                   filteredAndSortedAppData.map((entry, index) => (

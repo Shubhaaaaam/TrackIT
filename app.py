@@ -5,11 +5,33 @@ from flask_cors import CORS
 import csv
 import os
 import threading
+import google.generativeai as genai
+import pandas as pd
 
+genai.configure(api_key="YOUR_API_KEY")
+model = genai.GenerativeModel("gemini-2.5-flash")
+
+PHOTO_DIR = r"F:\Projects\TrackIT\CapturedPhotos"
+REPORT_DIR = "reports"
 CSV_FILE = "app_log.csv"
 
 app = Flask(__name__)
 CORS(app)
+
+def load_reports():
+    all_data = []
+
+    for file in os.listdir(REPORT_DIR):
+        if file.endswith(".csv"):
+            path = os.path.join(REPORT_DIR, file)
+            df = pd.read_csv(path)
+            all_data.append(df)
+
+    if not all_data:
+        return pd.DataFrame()
+
+    return pd.concat(all_data, ignore_index=True)
+
 
 def load_csv():
     if not os.path.exists(CSV_FILE):
@@ -27,7 +49,57 @@ def load_csv():
             })
     return data
 
-PHOTO_DIR = r"F:\Projects\TrackIT\CapturedPhotos"
+def summarize_with_gemini(df):
+    grouped = (
+        df.groupby("site")["total_seconds"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+
+    summary_text = "User activity summary:\n"
+    for site, seconds in grouped.items():
+        summary_text += f"- {site}: {seconds} seconds\n"
+
+    prompt = f"""
+            You are a productivity analysis assistant.
+
+            Given this user activity data:
+            {summary_text}
+
+            Generate:
+            1. A concise daily summary
+            2. Productivity insights
+            3. Time-wasting patterns (if any)
+            4. Suggestions to improve focus
+            """
+    response = model.generate_content(prompt)
+    return response.text
+
+def summary():
+    df = load_reports()
+
+    if df.empty:
+        return jsonify({"error": "No data found"}), 404
+
+    gemini_summary = summarize_with_gemini(df)
+
+    return jsonify({
+        "status": "ok",
+        "sites_tracked": df["site"].nunique(),
+        "total_time_minutes": int(df["total_seconds"].sum()),
+        "ai_summary": gemini_summary
+    })
+
+@app.route("/report", methods=["GET"])
+def report_ui():
+    df = load_reports()
+
+    if df.empty:
+        return "<h2>No data found</h2>", 404
+
+    ai_summary = summarize_with_gemini(df)
+
+    return jsonify({"ai_summary": ai_summary})
 
 @app.route("/photos/<path:filename>")
 def serve_photo(filename):

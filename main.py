@@ -11,18 +11,20 @@ SAVE_INTERVAL = 0.5
 
 #print("Windows app tracker started.")
 
-APP_NAME_MAP = {"code.exe":"VS Code","devenv.exe":"Visual Studio","pycharm64.exe":"PyCharm","clion64.exe":"CLion","idea64.exe":"IntelliJ IDEA","webstorm64.exe":"WebStorm",
-                "chrome.exe":"Google Chrome","msedge.exe":"Microsoft Edge","firefox.exe":"Mozilla Firefox","brave.exe":"Brave Browser","opera.exe":"Opera Browser",
-                "vivaldi.exe":"Vivaldi Browser","explorer.exe":"File Explorer","cmd.exe":"Command Prompt","powershell.exe":"PowerShell","wt.exe":"Windows Terminal",
-                "Taskmgr.exe":"Task Manager","OpenWith.exe":"Open With","whatsapp.exe":"WhatsApp Desktop","whatsapp.root.exe":"WhatsApp Desktop","telegram.exe":"Telegram",
-                "discord.exe":"Discord","slack.exe":"Slack","teams.exe":"Microsoft Teams","skype.exe":"Skype","SearchApp.exe":"Windows Search","notepad.exe":"Notepad",
-                "notepad++.exe":"Notepad++","sublime_text.exe":"Sublime Text","atom.exe":"Atom Editor","wordpad.exe":"WordPad","paint.exe":"Paint","vlc.exe":"VLC Media Player",
-                "winword": "MS Word", "excel": "MS Excel", "powerpnt": "MS PowerPoint", "onenote": "MS OneNote", "outlook": "Microsoft Outlook", "git": "Git",
-                "githubdesktop": "GitHub Desktop", "docker": "Docker", "dockerdesktop": "Docker Desktop", "postman": "Postman", "mongosh": "Mongo Shell","studio64": "Android Studio",
-                "androidstudio": "Android Studio", "steam": "Steam", "epicgameslauncher": "Epic Games Launcher", "riotclientservices": "Riot Client",
-                "ShellExperienceHost": "Windows Shell", "SearchUI": "Cortana", "OneDrive": "OneDrive", "Teams": "Microsoft Teams", "Zoom": "Zoom","Spotify.exe":"Spotify",
-                "audacity.exe":"Audacity","photoshop.exe":"Adobe Photoshop","illustrator.exe":"Adobe Illustrator","afterfx.exe":"Adobe After Effects","premierepro.exe":"Adobe Premiere Pro",
-                "lightroom.exe":"Adobe Lightroom","bridge.exe":"Adobe Bridge","indesign.exe":"Adobe InDesign","xd.exe":"Adobe XD","acrobat.exe":"Adobe Acrobat Reader"}
+APP_NAME_MAP = {
+    "code.exe":"VS Code","devenv.exe":"Visual Studio","pycharm64.exe":"PyCharm","clion64.exe":"CLion","idea64.exe":"IntelliJ IDEA","webstorm64.exe":"WebStorm",
+    "chrome.exe":"Google Chrome","msedge.exe":"Microsoft Edge","firefox.exe":"Mozilla Firefox","brave.exe":"Brave Browser","opera.exe":"Opera Browser",
+    "vivaldi.exe":"Vivaldi Browser","explorer.exe":"File Explorer","cmd.exe":"Command Prompt","powershell.exe":"PowerShell","wt.exe":"Windows Terminal",
+    "Taskmgr.exe":"Task Manager","OpenWith.exe":"Open With","whatsapp.exe":"WhatsApp Desktop","whatsapp.root.exe":"WhatsApp Desktop","telegram.exe":"Telegram",
+    "discord.exe":"Discord","slack.exe":"Slack","teams.exe":"Microsoft Teams","skype.exe":"Skype","SearchApp.exe":"Windows Search","notepad.exe":"Notepad",
+    "notepad++.exe":"Notepad++","sublime_text.exe":"Sublime Text","atom.exe":"Atom Editor","wordpad.exe":"WordPad","paint.exe":"Paint","vlc.exe":"VLC Media Player",
+    "winword": "MS Word", "excel": "MS Excel", "powerpnt": "MS PowerPoint", "onenote": "MS OneNote", "outlook": "Microsoft Outlook", "git": "Git",
+    "GitHubDesktop.exe": "GitHub Desktop", "docker": "Docker", "dockerdesktop": "Docker Desktop", "postman": "Postman", "mongosh": "Mongo Shell","studio64": "Android Studio",
+    "androidstudio": "Android Studio", "steam": "Steam", "epicgameslauncher": "Epic Games Launcher", "riotclientservices": "Riot Client",
+    "ShellExperienceHost": "Windows Shell", "SearchUI": "Cortana", "OneDrive": "OneDrive", "Teams": "Microsoft Teams", "Zoom": "Zoom","Spotify.exe":"Spotify",
+    "audacity.exe":"Audacity","photoshop.exe":"Adobe Photoshop","illustrator.exe":"Adobe Illustrator","afterfx.exe":"Adobe After Effects","premierepro.exe":"Adobe Premiere Pro",
+    "lightroom.exe":"Adobe Lightroom","bridge.exe":"Adobe Bridge","indesign.exe":"Adobe InDesign","xd.exe":"Adobe XD","acrobat.exe":"Adobe Acrobat Reader","LockApp.exe":"Lock Screen"
+    }
 
 def normalize_app_name(process_name):
     return APP_NAME_MAP.get(process_name.lower(), process_name)
