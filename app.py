@@ -8,15 +8,22 @@ import threading
 import google.generativeai as genai
 import pandas as pd
 
-with open("api.txt", "r") as f:
-    api= f.read().strip()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PHOTO_DIR = os.path.join(BASE_DIR, "CapturedPhotos")
+REPORT_DIR = os.path.join(BASE_DIR, "webreports")
+CSV_FILE = os.path.join(BASE_DIR, "app_log.csv")
+LOG_FILE = os.path.join(BASE_DIR, "web_log.txt")
 
-genai.configure(api_key=api)
-model = genai.GenerativeModel("gemini-2.5-flash")
+try:
+    with open(os.path.join(BASE_DIR, "api.txt"), "r") as f:
+        api = f.read().strip()
+except FileNotFoundError:
+    api = None
 
-PHOTO_DIR = r"F:\Projects\TrackIT\CapturedPhotos"
-REPORT_DIR = "reports"
-CSV_FILE = "app_log.csv"
+model = None
+if api:
+    genai.configure(api_key=api)
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
 app = Flask(__name__)
 CORS(app)
@@ -25,7 +32,7 @@ def load_reports():
     all_data = []
 
     for file in os.listdir(REPORT_DIR):
-        if file.endswith(".csv"):
+        if file.endswith("alltime.csv"):
             path = os.path.join(REPORT_DIR, file)
             df = pd.read_csv(path)
             all_data.append(df)
@@ -53,6 +60,12 @@ def load_csv():
     return data
 
 def summarize_with_gemini(df):
+    if model is None:
+        return "AI summary unavailable"
+
+    if "site" not in df.columns or "total_seconds" not in df.columns:
+        return "Invalid report format"
+
     grouped = (
         df.groupby("site")["total_seconds"]
         .sum()
@@ -77,21 +90,6 @@ def summarize_with_gemini(df):
             """
     response = model.generate_content(prompt)
     return response.text
-
-def summary():
-    df = load_reports()
-
-    if df.empty:
-        return jsonify({"error": "No data found"}), 404
-
-    gemini_summary = summarize_with_gemini(df)
-
-    return jsonify({
-        "status": "ok",
-        "sites_tracked": df["site"].nunique(),
-        "total_time_minutes": int(df["total_seconds"].sum()),
-        "ai_summary": gemini_summary
-    })
 
 @app.route("/report", methods=["GET"])
 def report_ui():
@@ -173,9 +171,6 @@ daily_totals = {}
 
 lock = threading.Lock()
 
-LOG_FILE = "web_log.txt"
-REPORT_DIR = "reports"
-
 os.makedirs(REPORT_DIR, exist_ok=True)
 
 def log_to_file(message):
@@ -185,13 +180,28 @@ def log_to_file(message):
 def export_day_to_csv(day, site_data):
     filename = f"usage_{day}.csv"
     path = os.path.join(REPORT_DIR, filename)
-
     file_exists = os.path.exists(path)
 
     with open(path, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
 
         if not file_exists:
+            writer.writerow(["date", "site", "total_seconds", "minutes", "hours"])
+
+        for site, duration in site_data.items():
+            total_seconds = int(duration.total_seconds())
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            writer.writerow([day.isoformat(), site, total_seconds, minutes, hours])
+
+    alltime = f"alltime.csv"
+    path = os.path.join(REPORT_DIR, alltime)
+    fglobal = os.path.exists(path)
+
+    with open(path, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+
+        if not fglobal:
             writer.writerow(["date", "site", "total_seconds", "minutes", "hours"])
 
         for site, duration in site_data.items():

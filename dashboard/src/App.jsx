@@ -182,8 +182,8 @@ const App = () => {
     <div className={`dashboard-container ${theme}-theme`}>
       <header className="header">
         <div>
-          <h1>User Dashboard</h1>
-          <p>Welcome, John Doe! Here's an overview of your app usage.</p>
+          <h1>Shubham's Dashboard</h1>
+          <p>Welcome, Shubham! Here's an overview of your app usage.</p>
         </div>
         <div>
           <h3>{viewMode === 'today' ? "Today's Data" : "All Time Data"}</h3>
