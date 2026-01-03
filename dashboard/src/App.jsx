@@ -26,6 +26,8 @@ const App = () => {
   const [selectedAppForSim, setSelectedAppForSim] = useState(null);
   const [theme, setTheme] = useState('dark');
   const [viewMode, setViewMode] = useState('today');
+  const [weeklyData, setWeeklyData] = useState({});
+
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -53,6 +55,12 @@ const App = () => {
     fetchSummary();
   }, [viewMode]);
 
+  useEffect(() => {
+    fetch("http://127.0.0.1:6001/summary/weekly")
+      .then(res => res.json())
+      .then(data => setWeeklyData(data))
+      .catch(err => console.error(err));
+  }, []);
 
   const formatDuration = useCallback((ms) => {
     if (ms === 0) return '0m';
@@ -158,13 +166,20 @@ const App = () => {
   }, [appData]);
 
   const dailyUsageData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map((day, index) => ({
-      name: day,
-      'Total Usage (Hours)': parseFloat(((Math.random() * 4 + 2) + index * 0.5).toFixed(2)),
-      'Total Apps Used': Math.floor(Math.random() * 4 + 5)
-    }));
-  }, []);
+    const map = {
+      monday: "Mon", tuesday: "Tue", wednesday: "Wed",
+      thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun"
+    };
+
+    return Object.entries(map).map(([key, label]) => {
+      const d = weeklyData[key] || { time: 0, count: 0 };
+      return {
+        name: label,
+        "Total Usage (Hours)": +(d.time / 3600).toFixed(2),
+        "Total Apps Used": d.count
+      };
+    });
+  }, [weeklyData]);
 
   const topAppsByUsageCount = useMemo(() => {
     return [...appData].sort((a, b) => b.usageCount - a.usageCount).slice(0, 5);

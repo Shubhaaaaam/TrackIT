@@ -28,6 +28,70 @@ if api:
 app = Flask(__name__)
 CORS(app)
 
+def generate_weekly_report(usage_dir="usage", output_file="weekly.csv"):
+    summary = {}
+
+    if not os.path.exists(usage_dir):
+        return
+
+    for filename in os.listdir(usage_dir):
+        if not filename.endswith(".csv") or filename.lower() == "global.csv":
+            continue
+
+        file_path = os.path.join(usage_dir, filename)
+
+        with open(file_path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+
+            if not reader.fieldnames or len(reader.fieldnames) < 4:
+                continue
+
+            day = reader.fieldnames[3].lower()
+
+            if day not in summary:
+                summary[day] = {"count": 0, "time": 0}
+
+            for row in reader:
+                summary[day]["count"] += int(row.get("open_count", 0))
+                summary[day]["time"] += int(row.get("usage_seconds", 0))
+
+    with open(output_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["day", "count", "time"])
+
+        for day, data in summary.items():
+            writer.writerow([day, data["count"], data["time"]])
+
+generate_weekly_report()
+
+def get_weekly_summary(usage_dir):
+    summary = {}
+
+    if not os.path.exists(usage_dir):
+        return summary
+
+    for filename in os.listdir(usage_dir):
+        if not filename.endswith(".csv") or filename.lower() == "global.csv":
+            continue
+
+        path = os.path.join(usage_dir, filename)
+
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+
+            if not reader.fieldnames or len(reader.fieldnames) < 4:
+                continue
+
+            day = reader.fieldnames[3].lower()
+
+            summary.setdefault(day, {"count": 0, "time": 0})
+
+            for row in reader:
+                summary[day]["count"] += int(row.get("open_count", 0))
+                summary[day]["time"] += int(row.get("usage_seconds", 0))
+
+    return summary
+
 def load_reports():
     all_data = []
 
@@ -90,6 +154,11 @@ def summarize_with_gemini(df):
             """
     response = model.generate_content(prompt)
     return response.text
+
+@app.route("/summary/weekly", methods=["GET"])
+def weekly_summary():
+    weekly_data = get_weekly_summary(USAGE_DIR)
+    return jsonify(weekly_data)
 
 @app.route("/report", methods=["GET"])
 def report_ui():
