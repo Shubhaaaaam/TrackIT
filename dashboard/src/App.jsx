@@ -17,14 +17,15 @@ const App = () => {
     { id: 9, name: 'Social Media', usageCount: 300, totalDuration: 18000000 },
     { id: 10, name: 'Gaming', usageCount: 60, totalDuration: 12000000 },
   ], []);
+  
   const demoWeeklyData = {
-    monday: { count: 18, time: 12600 }, // 3.5h
-    tuesday: { count: 22, time: 14400 }, // 4.0h
-    wednesday: { count: 19, time: 16200 }, // 4.5h
-    thursday: { count: 25, time: 18000 }, // 5.0h
-    friday: { count: 30, time: 19800 }, // 5.5h
-    saturday: { count: 14, time: 10800 }, // 3.0h
-    sunday: { count: 10, time: 9000 }   // 2.5h
+    monday: { count: 18, time: 12600 },
+    tuesday: { count: 22, time: 14400 },
+    wednesday: { count: 19, time: 16200 },
+    thursday: { count: 25, time: 18000 },
+    friday: { count: 30, time: 19800 },
+    saturday: { count: 14, time: 10800 },
+    sunday: { count: 10, time: 9000 }
   };
 
   const [appData, setAppData] = useState(initialAppData);
