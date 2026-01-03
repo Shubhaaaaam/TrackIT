@@ -6,121 +6,161 @@ import win32process
 import csv
 import os
 
-CSV_FILE = "app_log.csv"
-SAVE_INTERVAL = 0.5
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USAGE_DIR = os.path.join(BASE_DIR, "usage")
+os.makedirs(USAGE_DIR, exist_ok=True)
 
-#print("Windows app tracker started.")
+GLOBAL_CSV = os.path.join(USAGE_DIR, "global.csv")
+
+SAVE_INTERVAL = 1
 
 APP_NAME_MAP = {
-    "code.exe":"VS Code","devenv.exe":"Visual Studio","pycharm64.exe":"PyCharm","clion64.exe":"CLion","idea64.exe":"IntelliJ IDEA","webstorm64.exe":"WebStorm",
-    "chrome.exe":"Google Chrome","msedge.exe":"Microsoft Edge","firefox.exe":"Mozilla Firefox","brave.exe":"Brave Browser","opera.exe":"Opera Browser",
-    "vivaldi.exe":"Vivaldi Browser","explorer.exe":"File Explorer","cmd.exe":"Command Prompt","powershell.exe":"PowerShell","wt.exe":"Windows Terminal",
-    "Taskmgr.exe":"Task Manager","OpenWith.exe":"Open With","whatsapp.exe":"WhatsApp Desktop","whatsapp.root.exe":"WhatsApp Desktop","telegram.exe":"Telegram",
-    "discord.exe":"Discord","slack.exe":"Slack","teams.exe":"Microsoft Teams","skype.exe":"Skype","SearchApp.exe":"Windows Search","notepad.exe":"Notepad",
-    "notepad++.exe":"Notepad++","sublime_text.exe":"Sublime Text","atom.exe":"Atom Editor","wordpad.exe":"WordPad","paint.exe":"Paint","vlc.exe":"VLC Media Player",
-    "winword": "MS Word", "excel": "MS Excel", "powerpnt": "MS PowerPoint", "onenote": "MS OneNote", "outlook": "Microsoft Outlook", "git": "Git",
-    "GitHubDesktop.exe": "GitHub Desktop", "docker": "Docker", "dockerdesktop": "Docker Desktop", "postman": "Postman", "mongosh": "Mongo Shell","studio64": "Android Studio",
-    "androidstudio": "Android Studio", "steam": "Steam", "epicgameslauncher": "Epic Games Launcher", "riotclientservices": "Riot Client",
-    "ShellExperienceHost": "Windows Shell", "SearchUI": "Cortana", "OneDrive": "OneDrive", "Teams": "Microsoft Teams", "Zoom": "Zoom","Spotify.exe":"Spotify",
-    "audacity.exe":"Audacity","photoshop.exe":"Adobe Photoshop","illustrator.exe":"Adobe Illustrator","afterfx.exe":"Adobe After Effects","premierepro.exe":"Adobe Premiere Pro",
-    "lightroom.exe":"Adobe Lightroom","bridge.exe":"Adobe Bridge","indesign.exe":"Adobe InDesign","xd.exe":"Adobe XD","acrobat.exe":"Adobe Acrobat Reader","LockApp.exe":"Lock Screen"
-    }
+    "code.exe": "VS Code",
+    "devenv.exe": "Visual Studio",
+    "pycharm64.exe": "PyCharm",
+    "clion64.exe": "CLion",
+    "idea64.exe": "IntelliJ IDEA",
+    "webstorm64.exe": "WebStorm",
+
+    "chrome.exe": "Google Chrome",
+    "msedge.exe": "Microsoft Edge",
+    "firefox.exe": "Mozilla Firefox",
+    "brave.exe": "Brave Browser",
+    "opera.exe": "Opera Browser",
+
+    "whatsapp.exe": "WhatsApp Desktop",
+    "whatsapp.root.exe": "WhatsApp Desktop",
+    "telegram.exe": "Telegram",
+    "discord.exe": "Discord",
+    "slack.exe": "Slack",
+    "teams.exe": "Microsoft Teams",
+    "skype.exe": "Skype",
+
+    "spotify.exe": "Spotify",
+    "vlc.exe": "VLC Media Player",
+
+    "lockapp.exe": "Lock Screen",
+    "searchapp.exe": "Windows Search",
+    "taskmgr.exe": "Task Manager",
+    "explorer.exe": "File Explorer"
+}
+
+IGNORE_APPS = {
+    "lock screen",
+    "windows search",
+    "task manager",
+    "file explorer",
+    "open with",
+    "windows shell",
+    "cortana"
+}
 
 def normalize_app_name(process_name):
     return APP_NAME_MAP.get(process_name.lower(), process_name)
 
-def init_csv():
-    if not os.path.exists(CSV_FILE):
-        with open(CSV_FILE, "w", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["app_name", "usage_seconds", "open_count", "log_date"])
+def get_weekday_csv():
+    day = datetime.now().strftime("%A").lower()
+    return os.path.join(USAGE_DIR, f"{day}.csv"), day
+
+def init_csv(path, header):
+    if not os.path.exists(path):
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow(header)
 
 def get_active_window_process():
     try:
         hwnd = win32gui.GetForegroundWindow()
         _, pid = win32process.GetWindowThreadProcessId(hwnd)
         process = psutil.Process(pid)
-        return normalize_app_name(process.name())
+
+        app = normalize_app_name(process.name())
+        if app.lower() in IGNORE_APPS:
+            return None
+
+        return app
     except Exception:
         return None
 
-def load_existing_data():
+def load_existing(path, key_field):
     data = {}
-    if not os.path.exists(CSV_FILE):
+    if not os.path.exists(path):
         return data
 
-    with open(CSV_FILE, "r") as file:
-        reader = csv.DictReader(file)
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
         for row in reader:
-            key = (row["app_name"], row["log_date"])
-            data[key] = {
+            data[row[key_field]] = {
                 "usage_seconds": int(row["usage_seconds"]),
                 "open_count": int(row["open_count"])
             }
     return data
 
-def save_to_csv(session_usage, session_opens):
-    existing = load_existing_data()
-    today = str(datetime.now().date())
+def save_csv(path, key_name, usage, opens, label):
+    existing = load_existing(path, key_name)
 
-    for app, seconds in session_usage.items():
-        key = (app, today)
-        if key not in existing:
-            existing[key] = {"usage_seconds": 0, "open_count": 0}
+    for app, seconds in usage.items():
+        if app not in existing:
+            existing[app] = {"usage_seconds": 0, "open_count": 0}
 
-        existing[key]["usage_seconds"] += int(seconds)
-        existing[key]["open_count"] += session_opens.get(app, 0)
+        existing[app]["usage_seconds"] += int(seconds)
+        existing[app]["open_count"] += opens.get(app, 0)
 
-    with open(CSV_FILE, "w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["app_name", "usage_seconds", "open_count", "log_date"])
-        for (app, date), values in existing.items():
-            writer.writerow([app, values["usage_seconds"], values["open_count"], date])
-
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([key_name, "usage_seconds", "open_count", label])
+        for app, v in existing.items():
+            writer.writerow([app, v["usage_seconds"], v["open_count"], label])
 
 if __name__ == "__main__":
-    init_csv()
+    day_csv, current_day = get_weekday_csv()
+
+    init_csv(day_csv, ["app_name", "usage_seconds", "open_count", "day"])
+    init_csv(GLOBAL_CSV, ["app_name", "usage_seconds", "open_count", "scope"])
 
     usage_time = {}
     open_count = {}
 
     active_app = None
-    last_switch_time = time.time()
-    last_save_time = time.time()
+    last_switch = time.time()
+    last_save = time.time()
 
     try:
         while True:
-            current_app = get_active_window_process()
             now = time.time()
+            new_csv, new_day = get_weekday_csv()
 
-            if current_app != active_app:
+            if new_day != current_day:
+                day_csv = new_csv
+                current_day = new_day
+                init_csv(day_csv, ["app_name", "usage_seconds", "open_count", "day"])
+
+            current_app = get_active_window_process()
+
+            if current_app and current_app != active_app:
                 if active_app:
-                    elapsed = now - last_switch_time
-                    usage_time[active_app] = usage_time.get(active_app, 0) + elapsed
+                    usage_time[active_app] = usage_time.get(active_app, 0) + (now - last_switch)
 
-                if current_app:
-                    open_count[current_app] = open_count.get(current_app, 0) + 1
-
+                open_count[current_app] = open_count.get(current_app, 0) + 1
                 active_app = current_app
-                last_switch_time = now
+                last_switch = now
 
-            if now - last_save_time >= SAVE_INTERVAL:
+            if now - last_save >= SAVE_INTERVAL:
                 if active_app:
-                    elapsed = now - last_switch_time
-                    usage_time[active_app] = usage_time.get(active_app, 0) + elapsed
-                    last_switch_time = now
+                    usage_time[active_app] = usage_time.get(active_app, 0) + (now - last_switch)
+                    last_switch = now
 
-                save_to_csv(usage_time, open_count)
+                save_csv(day_csv, "app_name", usage_time, open_count, current_day)
+                save_csv(GLOBAL_CSV, "app_name", usage_time, open_count, "global")
+
                 usage_time.clear()
                 open_count.clear()
-                last_save_time = now
+                last_save = now
 
             time.sleep(1)
 
     except KeyboardInterrupt:
         if active_app:
-            elapsed = time.time() - last_switch_time
-            usage_time[active_app] = usage_time.get(active_app, 0) + elapsed
+            usage_time[active_app] = usage_time.get(active_app, 0) + (time.time() - last_switch)
 
-        save_to_csv(usage_time, open_count)
-        #print("\nTracking stopped. Final data saved.")
+        save_csv(day_csv, "app_name", usage_time, open_count, current_day)
+        save_csv(GLOBAL_CSV, "app_name", usage_time, open_count, "global")

@@ -1,6 +1,6 @@
 web_log.txt
 api.txt
-usage.csv
+usage/
 app_log.csv
 kill.py
 CapturedPhotos/

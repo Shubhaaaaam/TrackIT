@@ -38,9 +38,9 @@ const App = () => {
 
         const formatted = source.map((item, idx) => ({
           id: idx + 1,
-          name: item.app,
+          name: item.app_name,
           usageCount: Number(item.open_count) || 0,
-          totalDuration: Number(item.seconds) * 1000 || 0
+          totalDuration: Number(item.usage_seconds) * 1000 || 0
         }));
 
 

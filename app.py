@@ -122,46 +122,37 @@ def get_users():
 
     return jsonify(users)
 
+USAGE_DIR = os.path.join(BASE_DIR, "usage")
+
+GLOBAL_CSV = os.path.join(USAGE_DIR, "global.csv")
+def read_csv_safe(path):
+    data = []
+    if not os.path.exists(path):
+        return data
+
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            data.append({
+                "app_name": row["app_name"],
+                "usage_seconds": int(row["usage_seconds"]),
+                "open_count": int(row["open_count"])
+            })
+    return data
+
 @app.route("/summary", methods=["GET"])
 def summary():
-    rows = load_csv()
-    if not rows:
-        return jsonify({"all_time": [], "today": []})
+    today_name = datetime.now().strftime("%A").lower()
+    today_csv = os.path.join(USAGE_DIR, f"{today_name}.csv")
 
-    all_time_map = {}
-    today_map = {}
-    today_str = str(datetime.now().date())
+    today_data = read_csv_safe(today_csv)
+    all_time_data = read_csv_safe(GLOBAL_CSV)
 
-    for row in rows:
-        app_name = row["app_name"]
-        seconds = row["usage_seconds"]
-        opens = row["open_count"]
-        date = row["log_date"]
+    return jsonify({
+        "all_time": all_time_data,
+        "today": today_data
+    })
 
-        if app_name not in all_time_map:
-            all_time_map[app_name] = {"seconds": 0, "open_count": 0}
-        all_time_map[app_name]["seconds"] += seconds
-        all_time_map[app_name]["open_count"] += opens
-
-        if date == today_str:
-            if app_name not in today_map:
-                today_map[app_name] = {"seconds": 0, "open_count": 0}
-            today_map[app_name]["seconds"] += seconds
-            today_map[app_name]["open_count"] += opens
-
-    all_time = [
-        {"app": app, "seconds": v["seconds"], "open_count": v["open_count"]}
-        for app, v in all_time_map.items()
-    ]
-    today = [
-        {"app": app, "seconds": v["seconds"], "open_count": v["open_count"]}
-        for app, v in today_map.items()
-    ]
-
-    all_time.sort(key=lambda x: x["seconds"], reverse=True)
-    today.sort(key=lambda x: x["seconds"], reverse=True)
-
-    return jsonify({"all_time": all_time, "today": today})
 
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
