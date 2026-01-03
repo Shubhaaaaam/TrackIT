@@ -9,7 +9,7 @@ def install(pkgs):
 processes = [
     ("cam.py", ["opencv-python"]),
     ("vite.py", []),
-    #("main.py", ["psutil", "win32gui", "win32process"]),
+    ("main.py", ["psutil", "win32gui", "win32process"]),
     ("app.py", ["flask", "flask_cors", "threading", "requests", 'google-generativeai', 'pandas']),
 ]
 for script, pkgs in processes:
