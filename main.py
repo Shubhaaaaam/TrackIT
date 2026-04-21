@@ -60,6 +60,10 @@ def normalize_app_name(process_name):
 
 def get_weekday_csv():
     day = datetime.now().strftime("%A").lower()
+    if day == "sunday":
+        for file in os.listdir(USAGE_DIR):
+            if file.endswith(".csv") and not file.startswith("global"):
+                os.remove(os.path.join(USAGE_DIR, file))
     return os.path.join(USAGE_DIR, f"{day}.csv"), day
 
 def init_csv(path, header):
