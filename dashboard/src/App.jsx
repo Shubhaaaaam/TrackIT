@@ -30,8 +30,8 @@ const App = () => {
 
   const [appData, setAppData] = useState(initialAppData);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('totalDuration');
-  const [sortOrder, setSortOrder] = useState('des');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [showSimulateMessage, setShowSimulateMessage] = useState(false);
   const [selectedAppForSim, setSelectedAppForSim] = useState(null);
   const [theme, setTheme] = useState('dark');
@@ -305,7 +305,10 @@ const App = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-
+        
+        {/* 
+        Pie Chart Section
+        
         <div className="chart-card">
           <h3>App Usage Duration Distribution</h3>
           <ResponsiveContainer width="100%" height="100%">
@@ -329,7 +332,7 @@ const App = () => {
               <Tooltip formatter={(value) => formatDuration(value)} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
         <div className="chart-card">
           <h3>Average Duration Per Use</h3>
