@@ -13,36 +13,28 @@ os.makedirs(USAGE_DIR, exist_ok=True)
 GLOBAL_CSV = os.path.join(USAGE_DIR, "global.csv")
 
 SAVE_INTERVAL = 1
-
 APP_NAME_MAP = {
-    "code.exe": "VS Code",
-    "devenv.exe": "Visual Studio",
-    "pycharm64.exe": "PyCharm",
-    "clion64.exe": "CLion",
-    "idea64.exe": "IntelliJ IDEA",
-    "webstorm64.exe": "WebStorm",
-
-    "chrome.exe": "Google Chrome",
-    "msedge.exe": "Microsoft Edge",
-    "firefox.exe": "Mozilla Firefox",
-    "brave.exe": "Brave Browser",
-    "opera.exe": "Opera Browser",
-
-    "whatsapp.exe": "WhatsApp Desktop",
-    "whatsapp.root.exe": "WhatsApp Desktop",
-    "telegram.exe": "Telegram",
-    "discord.exe": "Discord",
-    "slack.exe": "Slack",
-    "teams.exe": "Microsoft Teams",
-    "skype.exe": "Skype",
-
-    "spotify.exe": "Spotify",
-    "vlc.exe": "VLC Media Player",
-
-    "lockapp.exe": "Lock Screen",
-    "searchapp.exe": "Windows Search",
-    "taskmgr.exe": "Task Manager",
-    "explorer.exe": "File Explorer"
+    "code.exe": "VS Code", "devenv.exe": "Visual Studio", "pycharm64.exe": "PyCharm", "clion64.exe": "CLion", "idea64.exe": "IntelliJ IDEA", 
+    "webstorm64.exe": "WebStorm", "chrome.exe": "Google Chrome", "msedge.exe": "Microsoft Edge", "firefox.exe": "Mozilla Firefox", 
+    "brave.exe": "Brave Browser", "opera.exe": "Opera Browser", "whatsapp.exe": "WhatsApp Desktop", "whatsapp.root.exe": "WhatsApp Desktop", 
+    "telegram.exe": "Telegram", "discord.exe": "Discord", "slack.exe": "Slack", "teams.exe": "Microsoft Teams", "skype.exe": "Skype", 
+    "spotify.exe": "Spotify", "vlc.exe": "VLC Media Player", "itunes.exe": "iTunes", "obs64.exe": "OBS Studio", "sharex.exe": "ShareX", 
+    "lockapp.exe": "Lock Screen", "searchapp.exe": "Windows Search", "taskmgr.exe": "Task Manager", "explorer.exe": "File Explorer", 
+    "winword.exe": "Microsoft Word", "powerpnt.exe": "Microsoft PowerPoint", "excel.exe": "Microsoft Excel", "onenote.exe": "Microsoft OneNote", 
+    "outlook.exe": "Microsoft Outlook", "startmenuexperiencehost.exe": "Start Menu", "shellexperiencehost.exe": "Windows Shell Experience", 
+    "ciscocollabhost.exe": "Cisco Collaboration Host", "applicationframehost.exe": "Application Frame Host", "pickerhost.exe": "Picker Host", 
+    "credentialuibroker.exe": "Credential UI Broker", "dwm.exe": "Desktop Window Manager", "conhost.exe": "Console Window Host", 
+    "rundll32.exe": "Windows DLL Host", "werfault.exe": "Windows Error Reporting", "cmd.exe": "Command Prompt", "powershell.exe": "PowerShell", 
+    "wsl.exe": "Windows Subsystem for Linux", "wslsettings.exe": "WSL Settings", "ubuntu.exe": "Ubuntu (WSL)", "bash.exe": "Bash Shell", 
+    "cleanmgr.exe": "Disk Cleanup", "dfrgui.exe": "Disk Defragmenter", "snippingtool.exe": "Snipping Tool", "mspaint.exe": "Paint", 
+    "notepad.exe": "Notepad", "notepad++.exe": "Notepad++", "photos.exe": "Photos", "paintdotnet.exe": "Paint.NET", 
+    "githubdesktop.exe": "GitHub Desktop", "git-credential-manager.exe": "Git Credential Manager", "gitkraken.exe": "GitKraken", 
+    "sourcetree.exe": "SourceTree", "docker desktop.exe": "Docker Desktop", "docker desktop installer.exe": "Docker Installer", 
+    "postman.exe": "Postman", "insomnia.exe": "Insomnia", "winrar.exe": "WinRAR", "7zfm.exe": "7-Zip", "7z.exe": "7-Zip CLI", 
+    "openwith.exe": "Open With", "msrdc.exe": "Remote Desktop", "anydesk.exe": "AnyDesk", "teamviewer.exe": "TeamViewer", 
+    "zoom.exe": "Zoom", "chrome_proxy.exe": "Chrome Proxy", "adb.exe": "Android Debug Bridge", "androidstudio64.exe": "Android Studio", 
+    "eclipse.exe": "Eclipse IDE", "netbeans64.exe": "NetBeans", "xampp-control.exe": "XAMPP Control Panel", "mysqlworkbench.exe": "MySQL Workbench", 
+    "pgadmin4.exe": "pgAdmin 4", "redis-desktop-manager.exe": "Redis Desktop Manager", "mongodbcompass.exe": "MongoDB Compass"
 }
 
 IGNORE_APPS = {
